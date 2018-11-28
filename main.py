@@ -10,6 +10,10 @@ RANGE_CH4 = 5000
 RANGE_C2H4 = 5000
 RANGE_C2H2 = 5000
 
+ACCURACY_CH4 = 0.05
+ACCURACY_C2H4 = 0.05
+ACCURACY_C2H2 = 0.05
+
 NUM_SAMPLES = 100
 
 
@@ -59,14 +63,13 @@ def generate_samples():
         msrmnts[i][5] = 100 * msrmnts[i][1] / (msrmnts[i][1] + msrmnts[i][2] + msrmnts[i][3])
         msrmnts[i][6] = 100 * msrmnts[i][2] / (msrmnts[i][1] + msrmnts[i][2] + msrmnts[i][3])
         msrmnts[i][7] = 1
-        msrmnts[i][8] = msrmnts[i][1] + 1000 * np.random.randn()
-        msrmnts[i][9] = msrmnts[i][2] + 5 * np.random.randn()
-        msrmnts[i][10] = msrmnts[i][3] + 5 * np.random.randn()
+        msrmnts[i][8] = msrmnts[i][1] + max(msrmnts[i][1] * ACCURACY_CH4, LDL_CH4) * np.random.randn()
+        msrmnts[i][9] = msrmnts[i][2] + max(msrmnts[i][2] * ACCURACY_C2H4, LDL_C2H4) * np.random.randn()
+        msrmnts[i][10] = msrmnts[i][3] + max(msrmnts[i][3] * ACCURACY_C2H2, LDL_C2H2) * np.random.randn()
     return msrmnts
 
 
 A = generate_samples()
-print(A)
 
 fig, ax = plt.subplots()
 ax.plot(A[:, 0], A[:, 8], label='8', marker='o')
