@@ -113,12 +113,17 @@ def show_result(num_samples, num_acc_step, num_acc_samples):
     plt.show()
 
 
-#show_result(20, 21, 200)
-A = generate_concentrations(100)
-B = generate_measured_concentrations(A, 10)
-C = 100 * (B - A) / A
-fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
-ax1.plot(C[:, 0], marker='x')
-ax2.plot(C[:, 1], marker='x')
-ax3.plot(C[:, 2], marker='x')
-plt.show()
+#
+# Check how true and measured values relate to each other
+#
+def check_measurements():
+    A = generate_concentrations(100)
+    B = generate_measured_concentrations(A, 10)
+    C = 100 * (B - A) / A
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+    ax1.plot(C[:, 0], marker='x')
+    ax2.plot(C[:, 1], marker='x')
+    ax3.plot(C[:, 2], marker='x')
+    plt.show()
+
+show_result(20, 21, 200)
