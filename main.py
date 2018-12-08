@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # Here the index 0 denotes values related to CH4, 1 to C2H4, 2 to C2H2
 LDL = np.array([5, 5, 5])
-RANGE = np.array([10000, 10000, 10000])
+RANGE = np.array([200, 140, 20])
 
 
 #
@@ -116,14 +116,19 @@ def show_result(num_samples, num_acc_step, num_acc_samples):
 #
 # Check how true and measured values relate to each other
 #
-def check_measurements():
-    A = generate_concentrations(100)
-    B = generate_measured_concentrations(A, 10)
+def check_measurements(num_samples, accuracy):
+    A = generate_concentrations(num_samples)
+    B = generate_measured_concentrations(A, accuracy)
     C = 100 * (B - A) / A
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
     ax1.plot(C[:, 0], marker='x')
     ax2.plot(C[:, 1], marker='x')
     ax3.plot(C[:, 2], marker='x')
+    ax1.grid(linestyle='--', alpha=0.4, axis='both')
+    ax2.grid(linestyle='--', alpha=0.4, axis='both')
+    ax3.grid(linestyle='--', alpha=0.4, axis='both')
     plt.show()
 
+
 show_result(20, 21, 200)
+#check_measurements(200, 25)
