@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 # Here the index 0 denotes values related to CH4, 1 to C2H4, 2 to C2H2
-LDL = np.array([5, 5, 5])
+LDL = np.array([2, 2, 0.5])
 RANGE = np.array([200, 140, 20])
 
 
@@ -11,13 +12,27 @@ RANGE = np.array([200, 140, 20])
 # A function to generate three gases concentrations all uniformly distributed in its respected measurement range
 # These concentrations are used as true values
 #
-def generate_concentrations(num_samples):
-    concentrations = np.empty([num_samples, 3])
-    for i in range(num_samples):
-        concentrations[i][0] = np.random.uniform(RANGE[0])
-        concentrations[i][1] = np.random.uniform(RANGE[1])
-        concentrations[i][2] = np.random.uniform(RANGE[2])
-    return concentrations
+def generate_true_values(num_samples):
+    return np.stack((np.random.uniform(0, RANGE[0], num_samples),
+                     np.random.uniform(0, RANGE[1], num_samples),
+                     np.random.uniform(0, RANGE[2], num_samples)), axis=1)
+
+
+#
+# A function to show the 3D scatter plot of the generated true concentration values
+#
+def show_true_values_3dscatter(num_samples):
+    vals = generate_true_values(num_samples)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(vals[:, 0], vals[:, 1], vals[:, 2])
+    ax.set_xlabel('Methane (CH4) true values')
+    ax.set_ylabel('Ethylene (C2H4) true values')
+    ax.set_zlabel('Acetylene (C2H2) true values')
+    ax.set_xlim(0, RANGE[0])
+    ax.set_ylim(0, RANGE[1])
+    ax.set_zlim(0, RANGE[2])
+    plt.show()
 
 
 #
@@ -26,11 +41,18 @@ def generate_concentrations(num_samples):
 # twice standard deviation
 #
 def generate_measured_concentrations(msrmnts, acc):
+    def formula(tv, ldl, ac):
+        if tv > ldl:
+            result = tv + tv * ac * np.random.randn() / 300
+        else:
+            result = max(tv + ldl * np.random.randn() / 3, 0)
+        return result
+
     measured_concentrations = np.empty([len(msrmnts), 3])
     for i in range(len(msrmnts)):
-        measured_concentrations[i][0] = msrmnts[i][0] + max(msrmnts[i][0] * acc / 100, LDL[0]) * np.random.randn() / 2
-        measured_concentrations[i][1] = msrmnts[i][1] + max(msrmnts[i][1] * acc / 100, LDL[1]) * np.random.randn() / 2
-        measured_concentrations[i][2] = msrmnts[i][2] + max(msrmnts[i][2] * acc / 100, LDL[2]) * np.random.randn() / 2
+        measured_concentrations[i][0] = formula(msrmnts[i][0], LDL[0], acc)
+        measured_concentrations[i][1] = formula(msrmnts[i][1], LDL[1], acc)
+        measured_concentrations[i][2] = formula(msrmnts[i][2], LDL[2], acc)
     return measured_concentrations
 
 
@@ -68,7 +90,7 @@ def get_duval_region(concentrations):
 # Duval triangle region calculated for true values matches that of measured values and vice versa
 #
 def generate_single_result(num_samples, acc):
-    a = generate_concentrations(num_samples)
+    a = generate_true_values(num_samples)
     b = generate_measured_concentrations(a, acc)
     a_duval = get_duval_region(a)
     b_duval = get_duval_region(b)
@@ -106,29 +128,33 @@ def show_result(num_samples, num_acc_step, num_acc_samples):
     A, B = generate_result(num_samples, num_acc_step, num_acc_samples)
     np.savetxt('data.csv', A, delimiter=',', fmt='%10.1f')
     fig, (ax1, ax2) = plt.subplots(2, 1)
-    ax1.scatter(A[:, 0], A[:, 3], marker='o')
+    ax1.scatter(A[:, 0], A[:, 3], marker='.')
     ax1.set_ylim([0, 110])
-    ax2.plot(B[:, 0], B[:, 1], marker='x', color='r')
+    ax1.set_ylabel('Correct results rate,\neach sample is a point')
+    ax1.set_xlabel('Measurement accuracy')
+    ax2.plot(B[:, 0], B[:, 1], marker='o', color='r')
     ax2.set_ylim([0, 110])
+    ax2.set_ylabel('Correct results rate,\naveraged for each accuracy step')
+    ax2.set_xlabel('Measurement accuracy')
     plt.show()
 
 
 #
-# Check how true and measured values relate to each other
+# Plot how true and measured values relate to each other
+# Done for the purpose of generating a plot with true and measured values
 #
 def check_measurements(num_samples, accuracy):
-    A = generate_concentrations(num_samples)
-    B = generate_measured_concentrations(A, accuracy)
-    C = 100 * (B - A) / A
+    a = generate_true_values(num_samples)
+    b = generate_measured_concentrations(a, accuracy)
+    c = 100 * (b - a) / a
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
-    ax1.plot(C[:, 0], marker='x')
-    ax2.plot(C[:, 1], marker='x')
-    ax3.plot(C[:, 2], marker='x')
+    ax1.plot(c[:, 0], marker='x')
+    ax2.plot(c[:, 1], marker='x')
+    ax3.plot(c[:, 2], marker='x')
     ax1.grid(linestyle='--', alpha=0.4, axis='both')
     ax2.grid(linestyle='--', alpha=0.4, axis='both')
     ax3.grid(linestyle='--', alpha=0.4, axis='both')
     plt.show()
 
 
-show_result(20, 21, 200)
-#check_measurements(200, 25)
+show_result(1000, 51, 100)
